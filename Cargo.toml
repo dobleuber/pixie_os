@@ -5,10 +5,4 @@ edition = "2018"
 authors = ["Wbert Adrian Castro Vera <dobleuber@gmail.com>"]
 
 [dependencies]
-
-
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
+bootloader = "0.9"
