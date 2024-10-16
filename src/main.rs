@@ -26,6 +26,10 @@ pub extern "C" fn _start() -> ! {
     print!("Test will run now...");
     println!("If you see this, Pixie OS is booting correctly!");
 
+    pixie_os::init();
+
+    x86_64::instructions::interrupts::int3();
+
     #[cfg(test)]
     test_main();
 
