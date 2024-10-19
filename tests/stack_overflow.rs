@@ -37,7 +37,10 @@ pub extern "C" fn _start() -> ! {
     pixie_os::gdt::init();
     init_test_idt();
 
-    loop {}
+    // trigger a stack overflow
+    stack_overflow();
+
+    panic!("Execution continued after stack overflow");
 }
 
 extern "x86-interrupt" fn test_double_fault_handler(

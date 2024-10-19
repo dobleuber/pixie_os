@@ -11,13 +11,13 @@ use pixie_os::{print,println};
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    pixie_os::hlt_loop();
 }
 
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    pixie_os::test_panic_handler(info)
+    pixie_os::test_panic_handler(info);
 }
 
 #[no_mangle]
@@ -25,20 +25,7 @@ pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
     print!("Test will run now...");
     println!("If you see this, Pixie OS is booting correctly!");
-
     pixie_os::init();
+    pixie_os::hlt_loop();
 
-    // x86_64::instructions::interrupts::int3();
-
-    fn stack_overflow() {
-        stack_overflow(); // for each recursion, the return address is pushed
-    }
-
-    // trigger a stack overflow
-    stack_overflow();
-
-    #[cfg(test)]
-    test_main();
-
-    loop {}
 }
