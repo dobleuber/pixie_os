@@ -22,10 +22,20 @@ fn panic(info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
-    print!("Test will run now...");
-    println!("If you see this, Pixie OS is booting correctly!");
-    pixie_os::init();
-    pixie_os::hlt_loop();
+    use x86_64::registers::control::Cr3;
 
+    println!("If you see this, Pixie OS is booting correctly!");
+    
+    pixie_os::init();
+
+    // pixie_os::hlt_loop();
+
+    let (level_4_page_table, _) = Cr3::read();
+    println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
+
+    #[cfg(test)]
+    test_main();
+
+    println!("It did not crash!");
+    pixie_os::hlt_loop();
 }
