@@ -8,11 +8,18 @@ use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 use pixie_os::println;
 
+extern crate alloc;
+
+use alloc::{boxed::Box, vec, vec::Vec, rc::Rc};
+
 entry_point!(kernel_main);
 
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
-    use pixie_os::memory::{self, BootInfoFrameAllocator};
-    use x86_64::{structures::paging::Page, VirtAddr};
+    use pixie_os::{
+        allocator,
+        memory::{self, BootInfoFrameAllocator},
+    };
+    use x86_64::VirtAddr;
 
     println!("If you see this, Pixie OS is booting correctly!");
     pixie_os::init();
@@ -21,12 +28,23 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut mapper = unsafe { memory::init(phys_mem_offset) };
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
-    let page = Page::containing_address(VirtAddr::new(0));
-    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
+    allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
 
-    // Write the string "New!" to the screen
-    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
-    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
+    let x = Box::new(41);
+    println!("heap_value: {:p}", x);
+
+    let mut vec = Vec::new();
+    for i in 0..500 {
+        vec.push(i);
+    }
+
+    println!("{:p}", vec.as_slice());
+
+    let reference_counted = Rc::new(vec![1, 2, 3]);
+    let cloned_reference_counted = reference_counted.clone();
+    println!("Current reference count: {}", Rc::strong_count(&reference_counted));
+    core::mem::drop(reference_counted);
+    println!("After dropping one reference: {}", Rc::strong_count(&cloned_reference_counted));
 
     #[cfg(test)]
     test_main();
