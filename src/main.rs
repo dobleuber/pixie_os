@@ -7,6 +7,7 @@
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 use pixie_os::println;
+use pixie_os::task::{Task, executor::Executor, keyboard};
 
 extern crate alloc;
 
@@ -49,8 +50,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     #[cfg(test)]
     test_main();
 
-    println!("It did not crash!");
-    pixie_os::hlt_loop();
+    
+    let mut executor = Executor::new();
+    executor.spawn(Task::new(example()));
+    executor.spawn(Task::new(keyboard::print_keypresses()));
+    executor.run();
 }
 
 #[cfg(not(test))]
@@ -64,4 +68,13 @@ fn panic(info: &PanicInfo) -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     pixie_os::test_panic_handler(info);
+}
+
+async fn async_number() -> u32 {
+    42
+}
+
+async fn example() {
+    let number = async_number().await;
+    println!("Number: {}", number);
 }

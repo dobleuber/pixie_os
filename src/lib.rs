@@ -17,6 +17,7 @@ pub mod serial;
 pub mod vga_buffer;
 extern crate alloc;
 pub mod allocator;
+pub mod task;
 
 pub trait Testable {
     fn run(&self);
